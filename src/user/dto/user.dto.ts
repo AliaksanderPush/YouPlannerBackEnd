@@ -48,3 +48,11 @@ export class UserDto {
   })
   confirmPassword: string;
 }
+
+export interface IUserPayload {
+  _id: string;
+  email: string;
+  isAdmin: boolean;
+  iat?: number;
+  exp?: number;
+}

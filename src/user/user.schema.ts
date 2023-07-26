@@ -20,6 +20,9 @@ export class User {
   @Prop({ default: 'user' })
   role: string;
 
+  @Prop({ required: true })
+  isAdmin: boolean;
+
   @Prop({ required: true, default: now() })
   createdAt: Date;
 }
