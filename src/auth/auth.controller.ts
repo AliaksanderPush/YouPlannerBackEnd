@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -14,6 +15,8 @@ import { UserDto } from 'src/user/dto/user.dto';
 import { IJwtTokens } from 'src/tokens/dto/tokens.dto';
 import { AuthLoginDto } from './dto/authLogin.dto';
 import { errAuthMessage } from './auth.constants';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { GetCurrentUserId } from 'src/common/decorators/get-current-user-id.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -33,7 +36,7 @@ export class AuthController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    return this.authService.createUser(userDto);
+    return this.authService.registration(userDto);
   }
 
   @UsePipes(new ValidationPipe())
@@ -53,17 +56,18 @@ export class AuthController {
     );
     if (!result) {
       throw new HttpException(
-        errAuthMessage.EMAIL_OR_PASSWORD_DO_NOT_MATCH,
+        errAuthMessage.WRONG_PASSWORD,
         HttpStatus.BAD_REQUEST,
       );
     }
     return this.authService.loginUser(authLoginDto, user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('/logout')
   @HttpCode(HttpStatus.OK)
-  logout() {
-    console.log('id=>');
+  logout(@GetCurrentUserId() _id: string) {
+    console.log('id=>', _id);
 
     //return this.authService.logout(new Types.ObjectId(userId));
   }

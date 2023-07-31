@@ -18,4 +18,19 @@ export class UserService {
   async getUserByEmail(email: string): Promise<User | null> {
     return await this.userModel.findOne({ email });
   }
+
+  async createUser(
+    name: string,
+    email: string,
+    hashPass: string,
+  ): Promise<User> {
+    const newUser = await this.userModel.create({
+      name,
+      email,
+      password: hashPass,
+      avatar: '',
+      isAdmin: false,
+    });
+    return newUser;
+  }
 }

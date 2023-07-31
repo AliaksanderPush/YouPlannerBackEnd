@@ -1,51 +1,52 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { sign, verify } from 'jsonwebtoken';
 import { IUserPayload } from 'src/user/dto/user.dto';
 import { IJwtTokens } from './dto/tokens.dto';
 import { Tokens, TokensDocument } from './tokens.schema';
-import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class TokensService {
   constructor(
     @InjectModel(Tokens.name)
     private readonly tokensModel: Model<TokensDocument>,
-    private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  generateTokens(
+  async generateTokens(
     email: string,
     _id: Types.ObjectId,
     isAdmin: boolean,
-  ): IJwtTokens {
-    const secret = this.configService.get('SECRET');
-    console.log('secret=>', secret);
+  ): Promise<IJwtTokens> {
     const payLoad = {
       email,
       isAdmin,
       _id,
     };
-    const accessToken = sign(payLoad, secret, {
+    const accessToken = await this.jwtService.signAsync(payLoad, {
+      secret: 'erer',
       expiresIn: '5m',
     });
-    const refreshToken = sign(payLoad, secret, {
+    console.log('refresh=>', accessToken);
+    const refreshToken = await this.jwtService.signAsync(payLoad, {
+      secret: 'erer',
       expiresIn: '15d',
     });
+    console.log('refresh=>', refreshToken);
     return {
       accessToken,
       refreshToken,
     };
   }
 
-  validateAccessToken(token: string): IUserPayload {
-    const userData = verify(token, 'erer') as IUserPayload;
+  async validateAccessToken(token: string): Promise<IUserPayload> {
+    const userData = await this.jwtService.verifyAsync(token);
     return userData;
   }
 
-  validateRefreshToken(token: string) {
-    const userData = verify(token, 'erer') as IUserPayload;
+  async validateRefreshToken(token: string) {
+    const userData = await this.jwtService.verifyAsync(token);
     return userData;
   }
 

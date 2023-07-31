@@ -17,19 +17,12 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
 
-  async createUser(param: UserDto): Promise<IJwtTokens> {
+  async registration(param: UserDto): Promise<IJwtTokens> {
     const { name, email, password } = param;
     const hashPass = await hash(password, 7);
+    const newUser = await this.userService.createUser(name, email, hashPass);
 
-    const newUser = await this.userModel.create({
-      name,
-      email,
-      password: hashPass,
-      avatar: '',
-      isAdmin: false,
-    });
-
-    const tokens = this.tokensService.generateTokens(
+    const tokens = await this.tokensService.generateTokens(
       email,
       newUser._id,
       newUser.isAdmin,
@@ -41,7 +34,7 @@ export class AuthService {
   async loginUser(authLoginDto: AuthLoginDto, user: User): Promise<IJwtTokens> {
     const { email } = authLoginDto;
 
-    const tokens = this.tokensService.generateTokens(
+    const tokens = await this.tokensService.generateTokens(
       email,
       user._id,
       user.isAdmin,
