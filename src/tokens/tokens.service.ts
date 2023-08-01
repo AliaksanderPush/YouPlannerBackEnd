@@ -1,27 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { sign, verify } from 'jsonwebtoken';
 import { IUserPayload } from 'src/user/dto/user.dto';
 import { IJwtTokens } from './dto/tokens.dto';
 import { Tokens, TokensDocument } from './tokens.schema';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TokensService {
   constructor(
     @InjectModel(Tokens.name)
     private readonly tokensModel: Model<TokensDocument>,
+    private readonly configService: ConfigService,
   ) {}
 
-  generateTokens(email: string, isAdmin: boolean): IJwtTokens {
+  generateTokens(
+    email: string,
+    _id: Types.ObjectId,
+    isAdmin: boolean,
+  ): IJwtTokens {
+    const secret = this.configService.get('SECRET');
+    console.log('secret=>', secret);
     const payLoad = {
       email,
       isAdmin,
+      _id,
     };
-    const accessToken = sign(payLoad, 'erer', {
+    const accessToken = sign(payLoad, secret, {
       expiresIn: '5m',
     });
-    const refreshToken = sign(payLoad, 'erer', {
+    const refreshToken = sign(payLoad, secret, {
       expiresIn: '15d',
     });
     return {
@@ -40,7 +49,7 @@ export class TokensService {
     return userData;
   }
 
-  async saveToken(userId: string, refreshToken: string) {
+  async saveToken(userId: Types.ObjectId, refreshToken: string) {
     const tokenData = await this.tokensModel.findOne({ user: userId });
     if (tokenData) {
       tokenData.refreshToken = refreshToken;

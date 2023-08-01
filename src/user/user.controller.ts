@@ -7,6 +7,6 @@ export class UserController {
 
   @Get('profile/:id')
   async getProfile(@Param('id') id: string) {
-    return this.userService.getUserProfileById(id);
+    return this.userService.getUserById(id);
   }
 }
