@@ -1,5 +1,5 @@
 import { UserService } from './../user/user.service';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { IJwtTokens } from 'src/tokens/dto/tokens.dto';
 import { User, UserDocument } from 'src/user/user.schema';
 import { hash, compare } from 'bcryptjs';
@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UserDto } from 'src/user/dto/user.dto';
 import { AuthLoginDto } from './dto/authLogin.dto';
 import { EmailService } from 'src/email/email.service';
+import { errAuthMessage } from './auth.constants';
 
 @Injectable()
 export class AuthService {
@@ -46,16 +47,23 @@ export class AuthService {
   }
 
   async sendToEmailWithCode(email: string): Promise<number> {
-    const code = this.generateSixDigitRandomNumber();
+    const code = this.generateSixRandomNumber();
     await this.emailService.sendUserCode(email, code);
     return code;
   }
 
   async comparePassword(pass: string, hash: string): Promise<boolean> {
-    return await compare(pass, hash);
+    const result = await compare(pass, hash);
+    if (!result) {
+      throw new HttpException(
+        errAuthMessage.WRONG_PASSWORD,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return result;
   }
 
-  private generateSixDigitRandomNumber() {
+  private generateSixRandomNumber() {
     return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
   }
 }

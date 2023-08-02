@@ -16,8 +16,8 @@ export class User {
   @Prop()
   avatar: string;
 
-  @Prop({ default: '' })
-  resedCode: string;
+  @Prop({ default: 0 })
+  resedCode: number;
 
   @Prop({ required: true })
   isAdmin: boolean;

@@ -14,9 +14,9 @@ import { AuthService } from './auth.service';
 import { UserDto } from 'src/user/dto/user.dto';
 import { IJwtTokens } from 'src/tokens/dto/tokens.dto';
 import { AuthLoginDto } from './dto/authLogin.dto';
-import { errAuthMessage } from './auth.constants';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { GetCurrentUserId } from 'src/common/decorators/get-current-user-id.decorator';
+import { errAuthMessage } from './auth.constants';
 
 @Controller('auth')
 export class AuthController {
@@ -44,35 +44,30 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() authLoginDto: AuthLoginDto) {
     const user = await this.userService.getUserByEmail(authLoginDto.email);
+
+    await this.authService.comparePassword(
+      authLoginDto.password,
+      user.password,
+    );
+
+    return this.authService.loginUser(authLoginDto, user);
+  }
+
+  @Post('/verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body() email: string) {
+    const user = await this.userService.getUserByEmail(email);
     if (!user) {
       throw new HttpException(
         errAuthMessage.USER_NOT_FOUND,
         HttpStatus.BAD_REQUEST,
       );
     }
-    const result = await this.authService.comparePassword(
-      authLoginDto.password,
-      user.password,
-    );
-    if (!result) {
-      throw new HttpException(
-        errAuthMessage.WRONG_PASSWORD,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    return this.authService.loginUser(authLoginDto, user);
-  }
-
-  @Post('/verify-email')
-  @HttpCode(HttpStatus.OK)
-  verifyEmail(@Body() email: string) {
-    const isregistred = this.userService.getUserByEmail(email);
-    if (!isregistred) {
-      throw new HttpException(
-        errAuthMessage.USER_NOT_FOUND,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    console.log('User=>', user);
+    const code = await this.authService.sendToEmailWithCode(email);
+    console.log('code=>', code);
+    await this.userService.updateCodeOfUserByEmail(email, code);
+    return { status: HttpStatus.OK };
   }
 
   @Post('/logout')

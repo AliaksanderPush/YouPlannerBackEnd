@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { TokensService } from 'src/tokens/tokens.service';
 import { User, UserDocument } from './user.schema';
 import { Model } from 'mongoose';
+import { errAuthMessage } from 'src/auth/auth.constants';
 
 @Injectable()
 export class UserService {
@@ -12,15 +13,27 @@ export class UserService {
   ) {}
 
   async getUserById(id: string): Promise<User | null> {
-    return await this.userModel.findById(id);
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new HttpException(
+        errAuthMessage.USER_NOT_FOUND,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return user;
   }
-
   async getUserByEmail(email: string): Promise<User | null> {
-    return await this.userModel.findOne({ email });
+    const user = await this.userModel.findOne({ email });
+    return user;
   }
 
-  async updateUserByEmail(email: string) {
-    const updatedUser = this.userModel.findOneAndUpdate({ email });
+  async updateCodeOfUserByEmail(email: string, code: number): Promise<void> {
+    const upUser = await this.userModel.findOneAndUpdate(
+      { email },
+      { $set: { code } },
+      { new: true },
+    );
+    console.log('upUser=>', upUser);
   }
 
   async createUser(
