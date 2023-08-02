@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserDto } from 'src/user/dto/user.dto';
 import { AuthLoginDto } from './dto/authLogin.dto';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly tokensService: TokensService,
     private readonly userService: UserService,
+    private readonly emailService: EmailService,
   ) {}
 
   async registration(param: UserDto): Promise<IJwtTokens> {
@@ -43,7 +45,17 @@ export class AuthService {
     return { ...tokens };
   }
 
+  async sendToEmailWithCode(email: string): Promise<number> {
+    const code = this.generateSixDigitRandomNumber();
+    await this.emailService.sendUserCode(email, code);
+    return code;
+  }
+
   async comparePassword(pass: string, hash: string): Promise<boolean> {
     return await compare(pass, hash);
+  }
+
+  private generateSixDigitRandomNumber() {
+    return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
   }
 }

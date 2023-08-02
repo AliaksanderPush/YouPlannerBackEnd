@@ -19,6 +19,10 @@ export class UserService {
     return await this.userModel.findOne({ email });
   }
 
+  async updateUserByEmail(email: string) {
+    const updatedUser = this.userModel.findOneAndUpdate({ email });
+  }
+
   async createUser(
     name: string,
     email: string,

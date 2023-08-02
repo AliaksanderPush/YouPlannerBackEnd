@@ -63,6 +63,19 @@ export class AuthController {
     return this.authService.loginUser(authLoginDto, user);
   }
 
+  @Post('/verify-email')
+  @HttpCode(HttpStatus.OK)
+  verifyEmail(@Body() email: string) {
+    const isregistred = this.userService.getUserByEmail(email);
+    if (!isregistred) {
+      throw new HttpException(
+        errAuthMessage.USER_NOT_FOUND,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Post('/logout')
   @UseGuards(JwtAuthGuard)
   @Post('/logout')
   @HttpCode(HttpStatus.OK)
