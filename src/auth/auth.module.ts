@@ -8,7 +8,8 @@ import { UserService } from 'src/user/user.service';
 import { Tokens, TokensSchema } from 'src/tokens/tokens.schema';
 import { JwtService } from '@nestjs/jwt';
 import { AccessTokenStrategy } from './strategies/accessToken.strategy';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
 
 @Module({
   imports: [
@@ -22,6 +23,8 @@ import { ConfigModule } from '@nestjs/config';
     UserService,
     JwtService,
     AccessTokenStrategy,
+    RefreshTokenStrategy,
+    ConfigService,
   ],
   exports: [AuthService],
   controllers: [AuthController],

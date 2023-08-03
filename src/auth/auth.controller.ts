@@ -2,10 +2,12 @@ import { UserService } from './../user/user.service';
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpException,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -17,6 +19,9 @@ import { AuthLoginDto } from './dto/authLogin.dto';
 import { AccessTokenGuard } from './guards/access-token.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { errAuthMessage } from './auth.constants';
+import { GetCurrentUserId } from 'src/common/decorators/get-current-user-id.decorator';
+import { GetCurrentUser } from 'src/common/decorators/get-current-user.decorator';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -77,8 +82,23 @@ export class AuthController {
   async logout(@Body() { refreshToken }: { refreshToken: string }) {
     return await this.authService.logoutUser(refreshToken);
   }
+  @Post('/refresh')
+  @UseGuards(RefreshTokenGuard)
+  @HttpCode(HttpStatus.OK)
+  refreshTokens(
+    @GetCurrentUserId() userId: string,
+    @GetCurrentUser('refreshToken') refreshToken: string,
+  ) {
+    return this.authService.refreshTokens(refreshToken);
+  }
 
-  // @Post('/refresh')
-  // @HttpCode(HttpStatus.OK)
-  // async refresh()
+  // @Get('/google/login')
+  // @UseGuards(GoogleAuthGuard)
+  // async googleAuth(@Req() req) {}
+
+  // @Get('/google/redirect')
+  // @UseGuards(GoogleAuthGuard)
+  // googleAuthRedirect(@Req() request: Request) {
+  //   return this.authService.googleAuth(request.user);
+  // }
 }

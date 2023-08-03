@@ -8,6 +8,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { Types } from 'mongoose';
 
 @ValidatorConstraint({ name: 'customText', async: false })
 export class CustomPasswordValidate implements ValidatorConstraintInterface {
@@ -49,7 +50,7 @@ export class UserDto {
 }
 
 export interface IUserPayload {
-  _id: string;
+  _id: Types.ObjectId;
   email: string;
   isAdmin: boolean;
   iat?: number;

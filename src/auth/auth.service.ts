@@ -57,6 +57,41 @@ export class AuthService {
     return deleted;
   }
 
+  async refreshTokens(refreshToken: string): Promise<IJwtTokens> {
+    const userData = await this.tokensService.validateTokens(refreshToken);
+    const token = await this.tokensService.findToken(refreshToken);
+    if (!userData || !token) {
+      throw new HttpException(errAuthMessage.TOKEN_FAULT, HttpStatus.FORBIDDEN);
+    }
+    const { email, _id, isAdmin } = userData;
+    const user = await this.userService.getUserByEmail(email);
+    if (!user) {
+      throw new HttpException(
+        errAuthMessage.USER_NOT_FOUND,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    const tokens = await this.tokensService.generateTokens(email, _id, isAdmin);
+    await this.tokensService.saveToken(user._id, tokens.refreshToken);
+    return { ...tokens };
+  }
+
+  // async googleAuth(userInfo: User) {
+  //   const { email, _id, isAdmin } = userInfo;
+  //   const user = await this.userService.getUserByEmail(email);
+  //   if (user) {
+  //     const tokens = await this.tokensService.generateTokens(
+  //       _id,
+  //       email,
+  //       isAdmin,
+  //     );
+  //     await this.tokensService.saveToken(_id, tokens.refreshToken);
+  //     return tokens;
+  //   }
+
+  //   return this.registration(userInfo);
+  // }
+
   async sendToEmailWithCode(email: string): Promise<number> {
     const code = this.generateSixRandomNumber();
     await this.emailService.sendUserCode(email, code);

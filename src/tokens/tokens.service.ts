@@ -5,6 +5,7 @@ import { IUserPayload } from 'src/user/dto/user.dto';
 import { IJwtTokens } from './dto/tokens.dto';
 import { Tokens, TokensDocument } from './tokens.schema';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TokensService {
@@ -12,6 +13,7 @@ export class TokensService {
     @InjectModel(Tokens.name)
     private readonly tokensModel: Model<TokensDocument>,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async generateTokens(
@@ -25,12 +27,12 @@ export class TokensService {
       _id,
     };
     const accessToken = await this.jwtService.signAsync(payLoad, {
-      secret: 'erer',
-      expiresIn: '5m',
+      secret: this.configService.get('SECRET'),
+      expiresIn: '25m',
     });
-    console.log('refresh=>', accessToken);
+
     const refreshToken = await this.jwtService.signAsync(payLoad, {
-      secret: 'erer',
+      secret: this.configService.get('SECRET'),
       expiresIn: '15d',
     });
 
@@ -40,13 +42,11 @@ export class TokensService {
     };
   }
 
-  async validateAccessToken(token: string): Promise<IUserPayload> {
-    const userData = await this.jwtService.verifyAsync(token);
-    return userData;
-  }
-
-  async validateRefreshToken(token: string) {
-    const userData = await this.jwtService.verifyAsync(token);
+  async validateTokens(token: string): Promise<IUserPayload> {
+    console.log('my secret=>', this.configService.get('SECRET'));
+    const userData = await this.jwtService.verifyAsync(token, {
+      secret: this.configService.get('SECRET'),
+    });
     return userData;
   }
 
