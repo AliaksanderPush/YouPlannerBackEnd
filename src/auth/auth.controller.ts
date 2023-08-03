@@ -14,8 +14,8 @@ import { AuthService } from './auth.service';
 import { UserDto } from 'src/user/dto/user.dto';
 import { IJwtTokens } from 'src/tokens/dto/tokens.dto';
 import { AuthLoginDto } from './dto/authLogin.dto';
-import { JwtAuthGuard } from './guards/jwt.guard';
-import { GetCurrentUserId } from 'src/common/decorators/get-current-user-id.decorator';
+import { AccessTokenGuard } from './guards/access-token.guard';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { errAuthMessage } from './auth.constants';
 
 @Controller('auth')
@@ -55,7 +55,7 @@ export class AuthController {
 
   @Post('/verify-email')
   @HttpCode(HttpStatus.OK)
-  async verifyEmail(@Body() email: string) {
+  async verifyEmail(@Body() { email }: { email: string }) {
     const user = await this.userService.getUserByEmail(email);
     if (!user) {
       throw new HttpException(
@@ -71,12 +71,14 @@ export class AuthController {
   }
 
   @Post('/logout')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Post('/logout')
   @HttpCode(HttpStatus.OK)
-  logout(@GetCurrentUserId() _id: string) {
-    console.log('id=>', _id);
-
-    //return this.authService.logout(new Types.ObjectId(userId));
+  async logout(@Body() { refreshToken }: { refreshToken: string }) {
+    return await this.authService.logoutUser(refreshToken);
   }
+
+  // @Post('/refresh')
+  // @HttpCode(HttpStatus.OK)
+  // async refresh()
 }

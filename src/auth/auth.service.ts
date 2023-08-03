@@ -46,6 +46,17 @@ export class AuthService {
     return { ...tokens };
   }
 
+  async logoutUser(refreshToken: string) {
+    const deleted = await this.tokensService.removeToken(refreshToken);
+    if (!deleted) {
+      throw new HttpException(
+        errAuthMessage.REFRESHTOKEN_NOT_FOUND,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return deleted;
+  }
+
   async sendToEmailWithCode(email: string): Promise<number> {
     const code = this.generateSixRandomNumber();
     await this.emailService.sendUserCode(email, code);

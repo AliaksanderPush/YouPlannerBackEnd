@@ -33,7 +33,7 @@ export class TokensService {
       secret: 'erer',
       expiresIn: '15d',
     });
-    console.log('refresh=>', refreshToken);
+
     return {
       accessToken,
       refreshToken,
