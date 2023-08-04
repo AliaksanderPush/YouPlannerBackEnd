@@ -76,21 +76,21 @@ export class AuthService {
     return { ...tokens };
   }
 
-  // async googleAuth(userInfo: User) {
-  //   const { email, _id, isAdmin } = userInfo;
-  //   const user = await this.userService.getUserByEmail(email);
-  //   if (user) {
-  //     const tokens = await this.tokensService.generateTokens(
-  //       _id,
-  //       email,
-  //       isAdmin,
-  //     );
-  //     await this.tokensService.saveToken(_id, tokens.refreshToken);
-  //     return tokens;
-  //   }
+  async googleAuth(userInfo: User) {
+    const { email, _id, isAdmin } = userInfo;
+    const user = await this.userService.getUserByEmail(email);
+    if (user) {
+      const tokens = await this.tokensService.generateTokens(
+        _id,
+        email,
+        isAdmin,
+      );
+      await this.tokensService.saveToken(_id, tokens.refreshToken);
+      return tokens;
+    }
 
-  //   return this.registration(userInfo);
-  // }
+    return this.registration(userInfo);
+  }
 
   async changeUserPassword(email: string, password: string) {
     const user = this.userService.getUserByEmail(email);

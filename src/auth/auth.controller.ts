@@ -23,7 +23,6 @@ import { GetCurrentUserId } from 'src/common/decorators/get-current-user-id.deco
 import { GetCurrentUser } from 'src/common/decorators/get-current-user.decorator';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { Types } from 'mongoose';
 
 @Controller('auth')
 export class AuthController {
@@ -94,15 +93,15 @@ export class AuthController {
     return this.authService.refreshTokens(refreshToken);
   }
 
-  // @Get('/google/login')
-  // @UseGuards(GoogleAuthGuard)
-  // async googleAuth(@Req() req) {}
+  @Get('/google/login')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth(@Req() req) {}
 
-  // @Get('/google/redirect')
-  // @UseGuards(GoogleAuthGuard)
-  // googleAuthRedirect(@Req() request: Request) {
-  //   return this.authService.googleAuth(request.user);
-  // }
+  @Get('/google/redirect')
+  @UseGuards(GoogleAuthGuard)
+  googleAuthRedirect(@Req() request: Request) {
+    return this.authService.googleAuth(request.user);
+  }
 
   @Post('/update-password')
   @UseGuards(AccessTokenGuard)
