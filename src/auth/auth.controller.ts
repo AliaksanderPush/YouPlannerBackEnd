@@ -15,13 +15,15 @@ import {
 import { AuthService } from './auth.service';
 import { UserDto } from 'src/user/dto/user.dto';
 import { IJwtTokens } from 'src/tokens/dto/tokens.dto';
-import { AuthLoginDto } from './dto/authLogin.dto';
+import { AuthLoginDto } from './dto/auth-login.dto';
 import { AccessTokenGuard } from './guards/access-token.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { errAuthMessage } from './auth.constants';
 import { GetCurrentUserId } from 'src/common/decorators/get-current-user-id.decorator';
 import { GetCurrentUser } from 'src/common/decorators/get-current-user.decorator';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { Types } from 'mongoose';
 
 @Controller('auth')
 export class AuthController {
@@ -101,4 +103,19 @@ export class AuthController {
   // googleAuthRedirect(@Req() request: Request) {
   //   return this.authService.googleAuth(request.user);
   // }
+
+  @Post('/update-password')
+  @UseGuards(AccessTokenGuard)
+  @HttpCode(HttpStatus.OK)
+  async updatePassword(
+    @Body() { email, password, confirmPassword }: UpdatePasswordDto,
+  ) {
+    if (password !== confirmPassword) {
+      throw new HttpException(
+        errAuthMessage.WRONG_PASSWORD,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return await this.authService.changeUserPassword(email, password);
+  }
 }

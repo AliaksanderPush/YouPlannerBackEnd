@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { TokensService } from 'src/tokens/tokens.service';
 import { User, UserDocument } from './user.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { errAuthMessage } from 'src/auth/auth.constants';
 
 @Injectable()
@@ -12,8 +12,8 @@ export class UserService {
     private readonly tokensService: TokensService,
   ) {}
 
-  async getUserById(id: string): Promise<User | null> {
-    const user = await this.userModel.findById(id);
+  async getUserById(_id: Types.ObjectId): Promise<User | null> {
+    const user = await this.userModel.findById(_id);
     if (!user) {
       throw new HttpException(
         errAuthMessage.USER_NOT_FOUND,

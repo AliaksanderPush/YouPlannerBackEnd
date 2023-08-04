@@ -7,7 +7,7 @@ import { TokensService } from '../tokens/tokens.service';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserDto } from 'src/user/dto/user.dto';
-import { AuthLoginDto } from './dto/authLogin.dto';
+import { AuthLoginDto } from './dto/auth-login.dto';
 import { EmailService } from 'src/email/email.service';
 import { errAuthMessage } from './auth.constants';
 
@@ -22,7 +22,7 @@ export class AuthService {
 
   async registration(param: UserDto): Promise<IJwtTokens> {
     const { name, email, password } = param;
-    const hashPass = await hash(password, 7);
+    const hashPass = await this.hashdata(password);
     const newUser = await this.userService.createUser(name, email, hashPass);
 
     const tokens = await this.tokensService.generateTokens(
@@ -92,6 +92,18 @@ export class AuthService {
   //   return this.registration(userInfo);
   // }
 
+  async changeUserPassword(email: string, password: string) {
+    const user = this.userService.getUserByEmail(email);
+    if (!user) {
+      throw new HttpException(
+        errAuthMessage.USER_NOT_FOUND,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    const hashPass = await this.hashdata(password);
+    return await this.userModel.updateOne({ email }, { password: hashPass });
+  }
+
   async sendToEmailWithCode(email: string): Promise<number> {
     const code = this.generateSixRandomNumber();
     await this.emailService.sendUserCode(email, code);
@@ -111,5 +123,9 @@ export class AuthService {
 
   private generateSixRandomNumber() {
     return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+  }
+
+  private async hashdata(data: string) {
+    return await hash(data, 7);
   }
 }
